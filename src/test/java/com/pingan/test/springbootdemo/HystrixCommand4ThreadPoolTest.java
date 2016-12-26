@@ -29,7 +29,7 @@ import rx.Observable;
 
 /**
  * 
- * 设置线程池里的线程数＝13，然后循环>13次和<13次，最后查看当前所有线程名称
+ * 设置线程池里的线程数＝3，然后循环>3次和<3次，最后查看当前所有线程名称
  * 
  */
 public class HystrixCommand4ThreadPoolTest extends HystrixCommand<String> {
@@ -41,9 +41,13 @@ public class HystrixCommand4ThreadPoolTest extends HystrixCommand<String> {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ThreadPoolTestGroup"))  
                 .andCommandKey(HystrixCommandKey.Factory.asKey("testCommandKey"))
                 .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey("ThreadPoolTest"))
+                .andCommandPropertiesDefaults(
+                	HystrixCommandProperties.Setter()
+                		.withExecutionTimeoutInMilliseconds(5000)
+                )
                 .andThreadPoolPropertiesDefaults(
-                		HystrixThreadPoolProperties.Setter()
-                		.withCoreSize(13)	// 配置线程池里的线程数
+                	HystrixThreadPoolProperties.Setter()
+                		.withCoreSize(3)	// 配置线程池里的线程数
                 )
         );
         this.name = name;
@@ -76,7 +80,7 @@ public class HystrixCommand4ThreadPoolTest extends HystrixCommand<String> {
         
     	// HystrixBadRequestException异常由非法参数或非系统错误引起，不会触发fallback，也不会被计入熔断器
 //        throw new HystrixBadRequestException("HystrixBadRequestException is never trigger fallback");
-        
+    	TimeUnit.MILLISECONDS.sleep(2000);
 		return name;
     }
 
@@ -87,22 +91,22 @@ public class HystrixCommand4ThreadPoolTest extends HystrixCommand<String> {
 
     public static class UnitTest {
 
-//        @Test
+        @Test
         public void testSynchronous() throws IOException {
-        	for(int i = 0; i < 50; i++) {
+        	for(int i = 0; i < 10; i++) {
 	        	try {
 //	        		assertEquals("fallback: Hlx", new HystrixCommand4ThreadPoolTest("Hlx").execute());
-	        		System.out.println("===========" + new HystrixCommand4ThreadPoolTest("Hlx").execute());
-//	        		Future<String> future = new HystrixCommand4ThreadPoolTest("Hlx"+i).queue();
+//	        		System.out.println("===========" + new HystrixCommand4ThreadPoolTest("Hlx").execute());
+	        		Future<String> future = new HystrixCommand4ThreadPoolTest("Hlx"+i).queue();
 //	        		System.out.println("===========" + future);
 	        	} catch(Exception e) {
 	        		System.out.println("run()抛出HystrixBadRequestException时，被捕获到这里" + e.getCause());
 	        	}
         	}
-        	for(int i = 222; i < 272; i++) {
+        	for(int i = 0; i < 20; i++) {
 	        	try {
 	//        		assertEquals("fallback: Hlx", new HystrixCommand4ThreadPoolTest("Hlx").execute());
-	        		System.out.println("1===========" + new HystrixCommand4ThreadPoolTest("Hlx").execute());
+	        		System.out.println("===========" + new HystrixCommand4ThreadPoolTest("Hlx").execute());
 //	        		Future<String> future = new HystrixCommand4ThreadPoolTest("Hlx1"+i).queue();
 //	        		System.out.println("===========" + future);
 	        	} catch(Exception e) {
